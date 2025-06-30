@@ -22,6 +22,9 @@ import { OcrService } from './features/ocr/domain/service';
 
 import initAuthRoute from './features/auth/adapter/route';
 import initOcrRoute from './features/ocr/adapter/route';
+import initReadDocxRoute from './features/read_docx/adapter/route';
+import { ReadDocxController } from './features/read_docx/adapter/controller';
+import { ReadDocxService } from './features/read_docx/domain/service';
 // import initPostRoute from './features/post/adapter/route';
 // import initUserRoute from './features/user/adapter/route';
 
@@ -66,6 +69,7 @@ const createHttpServer = (redisClient: any) => {
   // app.use('/post', initPostRoute(new PostController(postService)));
   // app.use('/users', initUserRoute(new UserController(userService, redisClient)));
   app.use('/ocr', initOcrRoute(new OcrController(new OcrService())));
+  app.use('/read_docx', initReadDocxRoute(new ReadDocxController(new ReadDocxService())));
 
   app.use(recoverMiddleware);
 
