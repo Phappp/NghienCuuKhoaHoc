@@ -47,4 +47,5 @@ export class OcrService {
         });
     }
 }
+// This service handles the OCR processing of uploaded images.
 export default OcrService;
