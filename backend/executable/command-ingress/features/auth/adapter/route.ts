@@ -7,7 +7,8 @@ const   initAuthRoute: (controller: AuthController) => express.Router  = (contro
   router.route('/google/oauth').get(controller.exchangeGoogleToken.bind(controller));
   router.route('/logout').post(controller.logout.bind(controller));
   router.route('/token').post(controller.refreshToken.bind(controller));
-
+  router.route('/register').post(controller.register.bind(controller));
+  router.route('/login').post(controller.login.bind(controller));
   return router;
 };
 
