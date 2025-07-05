@@ -9,27 +9,23 @@ import cors from 'cors';
 import { recoverMiddleware } from './middlewares/recover';
 import { createServer } from 'http';
 
+import initAuthRoute from './features/auth/adapter/route';
 import { AuthController } from './features/auth/adapter/controller';
 import { AuthServiceImpl } from './features/auth/domain/service';
 import { GoogleIdentityBroker } from './features/auth/identity-broker/google-idp.broker';
-// import { PostServiceImpl } from './features/post/domain/service';
-// import { PostController } from './features/post/adapter/controller';
 
-
+import initOcrRoute from './features/ocr/adapter/route';
 import { OcrController } from './features/ocr/adapter/controller';
 import { OcrService } from './features/ocr/domain/service';
 
-
-import initAuthRoute from './features/auth/adapter/route';
-import initOcrRoute from './features/ocr/adapter/route';
 import initReadDocxRoute from './features/read_docx/adapter/route';
 import { ReadDocxController } from './features/read_docx/adapter/controller';
 import { ReadDocxService } from './features/read_docx/domain/service';
-// import initPostRoute from './features/post/adapter/route';
-// import initUserRoute from './features/user/adapter/route';
 
-// import { UserController } from './features/user/adapter/controller';
-// import { UserServiceImpl } from './features/user/domain/service';
+import initSpeechRoute from './features/speech/adapter/route';
+import { SpeechController } from './features/speech/adapter/controller';
+import { SpeechToTextService } from './features/speech/domain/service';
+
 
 const app = express();
 
@@ -59,22 +55,18 @@ const createHttpServer = (redisClient: any) => {
     env.JWT_SECRET,
     env.JWT_REFRESH_SECRET,
   );
-  // const postService = new PostServiceImpl();
-  // const userService = new UserServiceImpl();
+
 
 
 
   // Setup route
   app.use('/auth', initAuthRoute(new AuthController(authService)));
-  // app.use('/post', initPostRoute(new PostController(postService)));
-  // app.use('/users', initUserRoute(new UserController(userService, redisClient)));
   app.use('/ocr', initOcrRoute(new OcrController(new OcrService())));
   app.use('/read_docx', initReadDocxRoute(new ReadDocxController(new ReadDocxService())));
+  app.use('/speech', initSpeechRoute(new SpeechController(new SpeechToTextService())));
 
   app.use(recoverMiddleware);
 
-  // app.use('/search', searchRouter);
-  // app.use('/suggestions', setupSuggestionRoute());
 
 
   return server;
