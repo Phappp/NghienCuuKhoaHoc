@@ -12,7 +12,11 @@ export interface SpeechToTextResult {
     error?: string;
     confidence?: number;
     segments?: { start: number; end: number; text: string }[];
-} 
+    use_cases?: any[]; // ✅ thêm dòng này
+    accepted_use_cases?: any[];
+    suggested_use_cases?: any[];
+}
+
 
 export class SpeechToTextService {
     async handleAudio(files: UploadedFile | UploadedFile[], context: string): Promise<SpeechToTextResult[]> {
@@ -45,7 +49,7 @@ export class SpeechToTextService {
 
             await (file as any).mv(dest);
             savedPaths.push(dest);
-        } 
+        }
 
         // === 2. Chia batch (ví dụ mỗi batch 2 file)
         const batches = this.chunk(savedPaths, 2);
@@ -62,7 +66,7 @@ export class SpeechToTextService {
 
         return allResults;
     }
- 
+
     private chunk<T>(array: T[], size: number): T[][] {
         const result: T[][] = [];
         for (let i = 0; i < array.length; i += size) {
@@ -70,7 +74,7 @@ export class SpeechToTextService {
         }
         return result;
     }
- 
+
 
     private runPython(audioPaths: string[], context: string): Promise<SpeechToTextResult[]> {
         return new Promise((resolve, reject) => {
@@ -96,5 +100,5 @@ export class SpeechToTextService {
             });
         });
     }
-} 
+}
 

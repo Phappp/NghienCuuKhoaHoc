@@ -3,3 +3,6 @@ coverage
 *.jpg
 
 *.mp3
+backend/executable/command-ingress/output/usecase_doc.json
+backend/executable/command-ingress/uploads_ocr/
+

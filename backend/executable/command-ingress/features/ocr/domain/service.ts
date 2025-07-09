@@ -2,10 +2,15 @@
 import { UploadedFile } from 'express-fileupload';
 import path from 'path';
 import fs from 'fs/promises';
-import { spawn } from 'child_process';
 import fsExtra from 'fs-extra';
+import { spawn } from 'child_process';
+
+import { InsightService } from '../../insight/domain/service';
+
 
 export class OcrService {
+    private insightService = new InsightService();
+
     async handleImages(images: UploadedFile[], llmKey?: string, llmEndpoint?: string): Promise<any> {
         const uploadDir = path.join(__dirname, '../../../uploads_ocr');
         await fs.mkdir(uploadDir, { recursive: true });
@@ -18,19 +23,28 @@ export class OcrService {
             savedPaths.push(savePath);
         }
 
-        // ✅ Truyền key xuống Python
         const result = await this.runOCR(savedPaths, llmKey, llmEndpoint);
 
-        // 🧹 Tự động dọn dẹp thư mục sau khi xử lý xong
+        // 🧠 Nếu có text OCR thành công → gọi Insight để trích use_cases
+        if (result && result.text && typeof result.text === 'string' && result.text.length > 5) {
+            try {
+                const insight = await this.insightService.extractMetadata(result.text);
+                result.use_cases = insight.use_cases ?? [];
+            } catch (e) {
+                console.warn('⚠️ Lỗi khi trích xuất insight:', e);
+                result.use_cases = [];
+            }
+        }
+
+        // 🧹 Dọn thư mục tạm
         try {
-            await fsExtra.emptyDir(uploadDir); // Hoặc fsExtra.remove(uploadDir) để xóa luôn
+            await fsExtra.emptyDir(uploadDir);
         } catch (e) {
             console.warn('⚠️ Không thể dọn thư mục uploads_ocr:', e);
         }
 
         return result;
     }
-
 
     async runOCR(imagePaths: string[], llmKey?: string, llmEndpoint?: string): Promise<any> {
         const scriptPath = path.join(__dirname, '../pythonScript/process_OCR.py');
@@ -62,4 +76,3 @@ export class OcrService {
         });
     }
 }
-export default OcrService;
