@@ -4,11 +4,13 @@ import fs from 'fs';
 import { InsightService } from '../../insight/domain/service';
 import { OcrService } from '../../ocr/domain/service';
 import { SpeechToTextService } from '../../speech/domain/service';
+import { ReadDocxService } from '../../read_docx/domain/service';
 
 export class AllInOneService {
     private insightService = new InsightService();
     private ocrService = new OcrService();
     private speechService = new SpeechToTextService();
+    private readDocxService = new ReadDocxService();
 
     async handle(files: { [fieldname: string]: UploadedFile | UploadedFile[] }, context: string): Promise<any> {
         const inputFiles: UploadedFile[] = [];
@@ -25,6 +27,7 @@ export class AllInOneService {
 
         const ocrFiles: UploadedFile[] = [];
         const speechFiles: UploadedFile[] = [];
+        const docxFiles: UploadedFile[] = [];
 
         for (const file of inputFiles) {
             if (!file || typeof file.name !== 'string') {
@@ -36,6 +39,8 @@ export class AllInOneService {
                 ocrFiles.push(file);
             } else if ([".mp3", ".wav", ".m4a", ".flac", ".ogg", ".aac", ".webm"].includes(ext)) {
                 speechFiles.push(file);
+            } else if (ext === ".docx") {
+                docxFiles.push(file);
             }
         }
 
@@ -95,6 +100,31 @@ export class AllInOneService {
             );
 
             results.speech = sttResult;
+        }
+
+        if (docxFiles.length > 0) {
+            const docxResult = await this.readDocxService.handleDocxFiles(docxFiles);
+            await Promise.all(
+                docxResult.map(async (item) => {
+                    if (item?.text && item.text.length > 10) {
+                        try {
+                            const insight = await this.insightService.extractWithSuggestion(item.text);
+                            item.accepted_use_cases = insight.accepted_use_cases ?? [];
+                            item.suggested_use_cases = insight.suggested_use_cases ?? [];
+                            accepted.push(...item.accepted_use_cases);
+                            suggested.push(...item.suggested_use_cases);
+                        } catch (e) {
+                            item.accepted_use_cases = [];
+                            item.suggested_use_cases = [];
+                            console.warn('⚠️ Lỗi insight DOCX:', e);
+                        }
+                    } else {
+                        item.accepted_use_cases = [];
+                        item.suggested_use_cases = [];
+                    }
+                })
+            );
+            results.docx = docxResult;
         }
 
         results.accepted_use_cases = accepted;

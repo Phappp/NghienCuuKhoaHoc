@@ -7,7 +7,7 @@ const service = new AllInOneService();
 interface RequestWithFiles extends Request {
   files: { [fieldname: string]: UploadedFile | UploadedFile[] };
 }
-
+ 
 export const handleAllInOne = async (req: Request, res: Response) => {
   const reqWithFiles = req as RequestWithFiles;
   const files = reqWithFiles.files;
