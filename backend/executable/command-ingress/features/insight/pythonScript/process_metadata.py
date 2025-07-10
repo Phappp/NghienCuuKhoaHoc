@@ -130,7 +130,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 # Load môi trường và khởi tạo LLM
 load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY_3"))
 llm = genai.GenerativeModel(model_name="gemini-2.0-flash")
 
 def extract_metadata(text, language='vn'):
